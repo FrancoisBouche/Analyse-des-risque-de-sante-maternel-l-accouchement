@@ -1,9 +1,10 @@
-# Utilisation du machine learning pour prédire le risque de mortalité maternel.
+## A propos de notre projet:
+## Utilisation du machine learning pour prédire le risque de mortalité maternel.
 
-### La mortalité maternelle reste un enjeu de santé publique majeur, en effet de
-### nombreuses femmes enceintes sont exposées à des complications médicales qui, si
-### elles ne sont pas anticipées et traitées à temps, peuvent conduire à des issues
-### fatales. Une meilleure détection et prédiction des facteurs de risque permettrait aux
+#### La mortalité maternelle reste un enjeu de santé publique majeur, en effet de
+#### nombreuses femmes enceintes sont exposées à des complications médicales qui, si
+#### elles ne sont pas anticipées et traitées à temps, peuvent conduire à des issues
+#### fatales. Une meilleure détection et prédiction des facteurs de risque permettrait aux
 professionnels de santé d'intervenir de manière proactive et de fournir des soins
 personnalisés. L’intelligence artificielle, et en particulier le machine learning, offre
 des outils puissants pour mieux analyser et interpréter les données médicales
