@@ -6,14 +6,10 @@
 #### Les méthodes employées incluent :
   #### ● k-nearest neighbors (KNN) : Un algorithme qui classe les patientes en fonction des données de proximité, ce qui est particulièrement utile pour des données médicales où la similarité entre individus est clé pour déterminer les risques.
   #### ● Forêts aléatoires (Random Forest) : utile pour capturer les relations complexes entre les variables et réduire le risque de surapprentissage. 
-  #### ● Machines à vecteurs de support (SVM) : conçu pour maximiser la distinction
-entre les classes de risque élevé et faible.
+  #### ● Machines à vecteurs de support (SVM) : conçu pour maximiser la distinction entre les classes de risque élevé et faible.
 #### Ces approches permettent de construire des modèles prédictifs robustes et d’optimiser la précision des prédictions, tout en aidant les cliniciens à prendre des décisions éclairées dans la gestion proactive des risques maternels.
 
 ##### Contributeur : François Boucher , Mireille Koutchade, Massamba Diop.
-Mots clés : Risque pour la santé maternelle , modèle de prédiction, KNN, SVM,
-Random Forest Classifier .
+##### Mots clés : Risque pour la santé maternelle , modèle de prédiction, KNN, SVM, Random Forest Classifier .
 
-1 - Mondal, S., Nag, A., Barman, A.K., & Karmakar, M. (2023). Machine
-Learning-based maternal health risk prediction model for IoMT framework.
-International Journal of Experimental Research and Review.
+####### 1 - Mondal, S., Nag, A., Barman, A.K., & Karmakar, M. (2023). Machine Learning-based maternal health risk prediction model for IoMT framework. International Journal of Experimental Research and Review.
