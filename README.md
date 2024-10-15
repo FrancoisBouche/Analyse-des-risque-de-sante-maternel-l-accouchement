@@ -1,5 +1,5 @@
 ## A propos de notre projet:
-# Ce projet fait partie de la conférence sur le Machine Learning organisée par les étudiants de la spécialité Data Science de l'Institut Agro.
+### Ce projet fait partie de la conférence sur le Machine Learning organisée par les étudiants de la spécialité Data Science de l'Institut Agro.
 ## Utilisation du machine learning pour prédire le risque de mortalité maternelle.
 
 #### La mortalité maternelle reste un enjeu de santé publique majeur, en effet de nombreuses femmes enceintes sont exposées à des complications médicales qui, si elles ne sont pas anticipées et traitées à temps, peuvent conduire à des issues fatales. Une meilleure détection et prédiction des facteurs de risque permettrait aux professionnels de santé d'intervenir de manière proactive et de fournir des soins personnalisés. L’intelligence artificielle, et en particulier le machine learning, offre des outils puissants pour mieux analyser et interpréter les données médicales complexes afin de prévenir ces risques.
