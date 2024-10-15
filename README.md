@@ -12,4 +12,4 @@
 ##### Contributeur : François Boucher , Mireille Koutchade, Massamba Diop.
 ##### Mots clés : Risque pour la santé maternelle , modèle de prédiction, KNN, SVM, Random Forest Classifier .
 
-####### 1 - Mondal, S., Nag, A., Barman, A.K., & Karmakar, M. (2023). Machine Learning-based maternal health risk prediction model for IoMT framework. International Journal of Experimental Research and Review.
+###### 1 - Mondal, S., Nag, A., Barman, A.K., & Karmakar, M. (2023). Machine Learning-based maternal health risk prediction model for IoMT framework. International Journal of Experimental Research and Review.
