@@ -1,5 +1,5 @@
 ## A propos de notre projet:
-## Utilisation du machine learning pour prédire le risque de mortalité maternel.
+## Utilisation du machine learning pour prédire le risque de mortalité maternelle.
 
 #### La mortalité maternelle reste un enjeu de santé publique majeur, en effet de nombreuses femmes enceintes sont exposées à des complications médicales qui, si elles ne sont pas anticipées et traitées à temps, peuvent conduire à des issues fatales. Une meilleure détection et prédiction des facteurs de risque permettrait aux professionnels de santé d'intervenir de manière proactive et de fournir des soins personnalisés. L’intelligence artificielle, et en particulier le machine learning, offre des outils puissants pour mieux analyser et interpréter les données médicales complexes afin de prévenir ces risques.
 #### Dans ce projet, nous avons exploités des algorithmes de machine learning, pour prédire le risque de mortalité maternelle (RiskLevel) en nous basant sur des variables cliniques essentielles : âge, pression artérielle systolique(SystolicBP) et diastolique(DiastolicBP), glycémie(BS), température corporelle(BodyTemp) et fréquence cardiaque(HeartRate). Ces facteurs sont directement liés aux risques d'hypertension, de diabète gestationnel et d'infections, qui représentent des causes fréquentes de mortalité maternelle (1).
