@@ -10,8 +10,8 @@
 entre les classes de risque élevé et faible.
 #### Ces approches permettent de construire des modèles prédictifs robustes et d’optimiser la précision des prédictions, tout en aidant les cliniciens à prendre des décisions éclairées dans la gestion proactive des risques maternels.
 
-## Contributeur : François Boucher , Mireille Koutchade, Massamba Diop.
-## Mots clés : Risque pour la santé maternelle , modèle de prédiction, KNN, SVM,
+##### Contributeur : François Boucher , Mireille Koutchade, Massamba Diop.
+Mots clés : Risque pour la santé maternelle , modèle de prédiction, KNN, SVM,
 Random Forest Classifier .
 
 1 - Mondal, S., Nag, A., Barman, A.K., & Karmakar, M. (2023). Machine
