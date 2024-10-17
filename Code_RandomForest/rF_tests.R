@@ -226,15 +226,16 @@ plot(model_rf_final4)
 importance(model_rf_final4) #ntree = 156, mtry = 3
 
 # > importance(model_rf_final2) #ntree = 156, mtry = 2
-# high risk  low risk mid risk MeanDecreaseAccuracy MeanDecreaseGini
+#             high risk  low risk mid risk MeanDecreaseAccuracy MeanDecreaseGini
 # Age          6.702115 10.392250 26.58113             22.50974         53.60410
 # SystolicBP  19.238080 23.973344 25.37017             35.70543         63.87534
 # DiastolicBP 11.294879  7.748201 21.81537             23.28778         41.82709
 # BS          38.983787 35.701764 38.57914             57.56666        124.17808
 # BodyTemp    10.450038 15.044878 17.08269             23.11040         23.53108
 # HeartRate    6.556232  4.632051 23.12116             21.24578         37.24985
+
 # > importance(model_rf_final4) #ntree = 156, mtry = 3
-# high risk  low risk mid risk MeanDecreaseAccuracy MeanDecreaseGini
+            # high risk  low risk mid risk MeanDecreaseAccuracy MeanDecreaseGini
 # Age          6.409808 12.874081 32.93074             27.94008         62.29304
 # SystolicBP  24.974198 29.875406 31.05894             46.96642         81.27927
 # DiastolicBP 10.640318 10.374676 24.11840             25.92491         45.42211
@@ -242,6 +243,8 @@ importance(model_rf_final4) #ntree = 156, mtry = 3
 # BodyTemp    17.458146 16.801369 20.29793             29.77565         27.52238
 # HeartRate    9.607146  2.924792 25.98515             25.92925         38.72488
 
+# Ces résultats permettent de voir que la varaible BS est celui qui mets beaucoup de poids dans le résultat des 2 modèles, respectivement 124.17808 et 147.54516 selon 
+# le critère de Gini (pour mémoire : Plus une variable réduit l'impureté de Gini (séparant efficacement les classes), plus elle est jugée importante. Cela se fait en moyenne sur tous les arbres de la forêt.)
 ####################################################################################
 # prédictions avec le modéle de #ntree = 156, mtry = 3
 # Prédictions sur l'ensemble de test
@@ -253,7 +256,7 @@ conf_matrix <- confusionMatrix(predictions, test_data$RiskLevel)
 # Afficher la matrice de confusion et les métriques de performance
 print(conf_matrix)
 
-# prédictions sur modele de #ntree = 156, mtry = 2 avec 1 train = 63%
+# prédictions sur modele de #ntree = 156, mtry = 2 avec un train = 63%
 # Prédictions sur l'ensemble de test
 predictions2 <- predict(model_rf_final2, newdata = test_data)
 
@@ -264,7 +267,7 @@ conf_matrix2 <- confusionMatrix(predictions2, test_data$RiskLevel)
 print(conf_matrix2)
 
 
-# prédictions avec le modéle de #ntree = 156, mtry = 2 avec 1 train = 70%
+# prédictions avec le modéle de #ntree = 156, mtry = 2 avec un train = 70%
 # Prédictions sur l'ensemble de test
 predictions3 <- predict(model_rf_final, newdata = test_data)
 
