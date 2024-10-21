@@ -2,7 +2,7 @@
 library(caret)
 library(ggplot2)
 
-# Charger le jeu de données Health_risk (assure-toi que le chemin vers le fichier est correct)
+# Charger le jeu de données Health_risk
 Health_risk <- read.csv("Code_RandomForest/Maternal Health Risk Data Set.csv", stringsAsFactors = TRUE)
 
 # Renommer les niveaux de la colonne RiskLevel pour les rendre compatibles avec R
@@ -14,9 +14,9 @@ Health_risk$RiskLevel <- factor(Health_risk$RiskLevel,
 print(levels(Health_risk$RiskLevel))
 
 # Nombre d'initialisations aléatoires (seed) à tester
-num_seeds <- 10
+num_seeds <- 25
 set.seed(123)  # Fixer la seed pour la reproductibilité initiale
-seeds <- sample(1:10000, num_seeds)  # Générer 100 seeds aléatoires
+seeds <- sample(1:10000, num_seeds)  # Générer 25 seeds aléatoires
 
 # Créer une structure pour stocker les résultats
 results_all_seeds <- data.frame(Seed = integer(), Best_k = integer(), Accuracy = double())
@@ -26,12 +26,16 @@ for (s in seeds) {
   
   set.seed(s)
   
-  # Division des données en ensemble d'entraînement (80%) et test (20%) avec la seed actuelle
-  trainIndex <- createDataPartition(Health_risk$RiskLevel, p = 0.8, list = FALSE)
+  # Division des données en ensemble d'entraînement (60%), validation (20%) et test (20%) avec la seed actuelle
+  trainIndex <- createDataPartition(Health_risk$RiskLevel, p = 0.6, list = FALSE)
   trainData <- Health_risk[trainIndex, ]
-  testData <- Health_risk[-trainIndex, ]
   
-  # Contrôle pour validation croisée (10-fold cross-validation)
+  remainingData <- Health_risk[-trainIndex, ]
+  valIndex <- createDataPartition(remainingData$RiskLevel, p = 0.5, list = FALSE)
+  valData <- remainingData[valIndex, ]
+  testData <- remainingData[-valIndex, ]
+  
+  # Contrôle pour validation croisée (10-fold cross-validation) sur l'ensemble de validation
   fitControl.TwoClass <- trainControl(method = "cv", 
                                       number = 10, 
                                       classProbs = TRUE, 
@@ -40,28 +44,31 @@ for (s in seeds) {
   # Définir la grille pour k de 1 à 30
   knn_grid <- data.frame(k = 1:30)
   
-  # Entraîner le modèle avec validation croisée en optimisant l'accuracy
+  # Entraîner le modèle avec validation croisée en optimisant l'accuracy sur l'ensemble de validation
   knn_model_cv <- caret::train(RiskLevel ~ ., 
                                data = trainData, 
                                method = "knn", 
                                tuneGrid = knn_grid,  # Grille pour k
                                trControl = fitControl.TwoClass,
-                               metric = "Accuracy")  # Optimiser l'accuracy
-  
-  # Prédictions sur le jeu de données test
-  knn_predictions <- predict(knn_model_cv, newdata = testData)
-  
-  # Calcul de l'accuracy sur l'ensemble de test
-  test_accuracy <- sum(knn_predictions == testData$RiskLevel) / nrow(testData)
+                               metric = "Accuracy")  # Optimiser l'accuracy sur validation
   
   # Meilleur k trouvé
   best_k <- knn_model_cv$bestTune$k
+  
+  # Entraîner le modèle final sur train + validation avec le meilleur k
+  final_model <- knn3(RiskLevel ~ ., data = rbind(trainData, valData), k = best_k)
+  
+  # Prédictions sur le jeu de données test
+  knn_predictions <- predict(final_model, newdata = testData, type = "class")
+  
+  # Calcul de l'accuracy sur l'ensemble de test
+  test_accuracy <- sum(knn_predictions == testData$RiskLevel) / nrow(testData)
   
   # Stocker les résultats pour cette seed
   results_all_seeds <- rbind(results_all_seeds, data.frame(Seed = s, Best_k = best_k, Accuracy = test_accuracy))
   
   # Afficher les résultats intermédiaires
-  print(paste("Seed:", s, "Meilleur k:", best_k, "Accuracy:", round(test_accuracy, 4)))
+  print(paste("Seed:", s, "Meilleur k:", best_k, "Accuracy (Test):", round(test_accuracy, 4)))
 }
 
 # Afficher les résultats pour toutes les seeds
@@ -93,4 +100,3 @@ ggplot(results_all_seeds, aes(x = Best_k)) +
   labs(title = "Distribution des meilleurs k pour différentes seeds", 
        x = "Meilleur k", 
        y = "Fréquence")
-
