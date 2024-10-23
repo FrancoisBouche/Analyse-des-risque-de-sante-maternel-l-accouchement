@@ -1,0 +1,163 @@
+---
+title: "Code_all_q"
+format: pdf
+editor: visual
+---
+
+```{r}
+library(randomForest)
+library(pROC) # Courbes de ROC
+library(ggplot2)
+library(caret)
+library(e1071)
+
+# Lire les données
+data <- read.csv("Maternal Health Risk Data Set.csv", stringsAsFactors = T)
+data$RiskLevel <- factor(data$RiskLevel, 
+                                levels = c("high risk", "mid risk", "low risk"), 
+                                labels = c("high", "mid", "low"))
+str(data)
+
+# Fixer la graine pour assurer la reproductibilité
+set.seed(123)
+# Définir la taille de l'ensemble d'entraînement (63 %)
+# train_index <- sample(seq_len(nrow(data)), size = 0.63 * nrow(data))
+# 
+# # Diviser les données en ensemble d'entraînement et de test
+# train_data <- data[train_index, ]
+# test_data <- data[-train_index, ]
+write.csv(train_data, "/Users/massambadiop/Documents/INSTITUT AGRO/M2 Sciences des données/Machine learning/ML project Train_data.csv", row.names=FALSE)
+write.csv(test_data, "/Users/massambadiop/Documents/INSTITUT AGRO/M2 Sciences des données/Machine learning/ML project Test_data.csv", row.names=FALSE)
+str(train_data)
+str(test_data)
+
+```
+
+## Modèle final RandomForest
+
+```{r}
+# model_rf_final <- randomForest(RiskLevel ~ ., data = train_data, ntree = 40, mtry = 6, importance = TRUE)
+model_rf_final <- randomForest(RiskLevel ~ ., data = train_data, ntree = 156, mtry = 2, importance = TRUE)
+print(model_rf_final)
+plot(model_rf_final)
+plot(model_rf_final$err.rate, pch=16)
+
+model_rf_final
+### Test Model RF
+RF_predictions <- predict(model_rf_final, newdata = test_data)
+RF_accuracy <- sum(RF_predictions == test_data$RiskLevel) / nrow(test_data)
+print(paste("Accuracy for RF:", round(RF_accuracy * 100, 2), "%"))
+
+
+
+
+
+
+
+
+
+
+
+
+# # matrice de confusion
+# conf_matrix <- confusionMatrix(predictions, test_data$RiskLevel)
+# 
+# print(conf_matrix)
+# typeof(conf_matrix[[1]])
+# # Prédire les probabilités sur l'ensemble de test
+# prob_predictions <- predict(model_rf_final, newdata = test_data, type = "prob")
+# 
+# # Créer les courbes ROC pour chaque classe
+# # 1. Pour la classe 'high risk'
+# roc_high <- roc(response = as.numeric(test_data$RiskLevel == "high"), 
+#                 predictor = prob_predictions[, "high"])
+# 
+# # 2. Pour la classe 'low risk'
+# roc_low <- roc(response = as.numeric(test_data$RiskLevel == "low"), 
+#                predictor = prob_predictions[, "low"])
+# 
+# # 3. Pour la classe 'mid risk'
+# roc_mid <- roc(response = as.numeric(test_data$RiskLevel == "mid"), 
+#                predictor = prob_predictions[, "mid"])
+# 
+# # Tracer les courbes ROC
+# plot(roc_high, col = "red", main = "Courbes ROC pour chaque classe", lwd = 2)
+# plot(roc_low, col = "blue", add = TRUE, lwd = 2)
+# plot(roc_mid, col = "green", add = TRUE, lwd = 2)
+# legend(0.3,0.4, legend = c("High", "Low", "Mid"), col = c("red", "blue", "green"), lwd = 2, cex=0.5)
+# 
+# 
+# # Afficher l'AUC pour chaque classe
+# auc_high <- auc(roc_high)
+# auc_low <- auc(roc_low)
+# auc_mid <- auc(roc_mid)
+# auc <- cat("AUC High Risk:", auc_high, "\nAUC Low Risk:", auc_low, "\nAUC Mid Risk:", auc_mid, "\n")
+
+```
+
+### Modele final KNN
+
+```{r}
+final_model <- knn3(RiskLevel ~ ., data = train_data, k = 1)
+  
+  # Prédictions sur le jeu de données test
+  knn_predictions <- predict(final_model, newdata = test_data, type = "class")
+  
+  # Calcul de l'accuracy sur l'ensemble de test
+  KNN_accuracy <- sum(knn_predictions == test_data$RiskLevel) / nrow(test_data)
+  print(paste("Accuracy for KNN:", round(KNN_accuracy * 100, 2), "%"))
+```
+
+### Modele final SVM
+
+```{r}
+svm_model_OVA_radial <- ksvm(RiskLevel ~ ., 
+                             data = train_data, 
+                             type = "C-svc", 
+                             kernel = "rbfdot", 
+                             prob.model = TRUE)
+
+# Prédire les labels de l'ensemble de test
+predictions <- predict(svm_model_OVA_radial, newdata = test_data)
+
+# Évaluer la performance avec une matrice de confusion
+conf_matrix <- confusionMatrix(predictions, test_data$RiskLevel)
+print(conf_matrix)
+
+# matrice de confusion
+# Charger les bibliothèques nécessaires
+library(ggplot2)
+library(caret)
+
+# Extraire les données de la matrice de confusion sous forme de tableau
+conf_data <- as.data.frame(conf_matrix$table)
+colnames(conf_data) <- c("Prédiction", "Vrai", "Freq")
+
+# Visualiser la matrice de confusion sous forme de heatmap
+ggplot(conf_data, aes(x = Prédiction, y = Vrai, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "yellow", high = "goldenrod") +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  labs(title = "Matrice de Confusion_OVA_Radial", y = "Classe Prédite_OVA_Radial", x = "Classe Réelle") +
+  theme_minimal()
+```
+
+### Comparaison des modeles
+
+```{r}
+acc_comp <- data.frame(
+  Methods = c("RF", "KNN", "SVM"),
+  Accuracy = c(0.9271, 0.9115, 0.7344)
+)
+
+# Create the plot
+ggplot(acc_comp, aes(x = Methods, y = Accuracy, fill = Methods
+                       )) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = round(Accuracy, 2)*100), vjust = -0.6, size = 4, cex=0.7) +
+  ylim(0, 1) +
+  ggtitle("Accuracy Comparison of ML Methods") +
+  xlab("Methods") +
+  ylab("Accuracy (%)") +
+  theme_minimal()
+```

@@ -1,0 +1,176 @@
+---
+title: "Projet ML"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+data <- read.csv("Maternal Health Risk Data Set.csv")
+
+```
+
+## Prétraitement des données
+
+```{r}
+library(caret)
+library(ggplot2)
+library(GGally)
+library(corrplot)
+library(reshape2)
+library(FactoMineR)
+library(ggfortify)
+# Inspect data structure
+
+############ Data Preprocessing
+# Convert 'RiskLevel' to factor
+data$RiskLevel <- as.factor(data$RiskLevel)
+numeric_columns <- c('Age', 'SystolicBP', 'DiastolicBP', 'BS', 'BodyTemp', 'HeartRate')
+## NA exporation
+library(VIM)
+aggr(data)
+
+res <- summary(aggr(data,prop=TRUE,combined=TRUE))$combinations
+matrixplot(data,sortby=2)
+```
+
+## Partie EDA: analyse exploratoire
+
+Dans cette partie on procéder à l'analyse et de la visualisation des données afin de comprendre les modèles sous-jacents et d'identifier les relations entre les variables. Elle permet, en outre, de comprendre la structure des données, de détecter les valeurs aberrantes et d'évaluer les variables.
+
+### Univariate analysis
+
+```{r}
+str(data)
+dim(data)
+# Summary statistics
+table(colnames(data))
+kableExtra::kable(colnames(data))
+summary(data)
+# Boxplots per variable.  
+for (col in numeric_columns) {
+  p <- ggplot(data, aes(x = data[[col]])) +
+    geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+    ggtitle(paste("Distribution of", col)) +
+    theme_minimal() +
+    xlab(col) + ylab("Frequency") +
+    theme(plot.title = element_text(hjust = 0.5))
+  
+  print(p)
+}
+
+ggplot(data, aes(x = RiskLevel, fill = RiskLevel)) +
+  geom_bar() +
+  labs(title = "Distribution of RiskLevel Classes", x = "RiskLevel", y = "Count") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.05, size = 3.5) +  # Ajout des étiquettes de données
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1")
+
+ggplot(data, aes(x = data[[numeric_columns[1]]], y = data[[numeric_columns[2]]], color = RiskLevel)) +
+  geom_point(size = 3, alpha = 0.6) +
+  labs(title = "Scatter Plot of Feature 1 vs Feature 2 by RiskLevel",
+       x = numeric_columns[1], y = numeric_columns[2]) +
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1") 
+
+  
+  print(p)
+
+
+# Boxplots per variable vs RiskLevel
+for (col in numeric_columns) {
+  p <- ggplot(data, aes_string( x = col)) +
+    geom_boxplot(fill = "skyblue") +
+    ggtitle(paste("Boxplot of", col)) +
+    theme_minimal() +
+ 
+    theme(plot.title = element_text(hjust = 0.5))
+  
+  print(p)
+}
+# Histograms for each numeric feature
+
+for (col in numeric_columns) {
+  p <- ggplot(data, aes_string(x = col)) +
+    geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+    geom_density() +
+    ggtitle(paste("Distribution of", col)) +
+    theme_minimal() +
+    xlab(col) + ylab("Frequency") +
+    theme(plot.title = element_text(hjust = 0.5))
+  print(p)
+}
+
+# Reshape the data: from wide to long format for easy facet wrapping
+data_long <- melt(data, measure.vars = numeric_columns)
+
+# Plotting all histograms in a single window using facet_wrap
+ggplot(data_long, aes(x = value)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  facet_wrap(~variable, scales = 'free_x') +  # Facet for each variable
+  theme_minimal() +
+  xlab("Value") + ylab("Frequency") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Distribution of Numerical Features")
+
+```
+
+### Bivariate & muktivariate analysis
+
+```{r}
+# Correlation matrix and heatmap
+cor_matrix <- cor(data[, numeric_columns])
+corrplot(cor_matrix, method = "color", addCoef.col = "black", tl.cex = 0.8, number.cex = 0.7, main = "Correlation Heatmap")
+# BS vs SystolicBP
+ggplot(data, aes(x = BS, y = SystolicBP, color = RiskLevel)) +
+  geom_point(size = 3, alpha = 0.7) +
+  ggtitle("Scatter Plot: Blood Sugar vs. Systolic BP by Risk Level") +
+  theme_minimal() +
+  xlab("Blood Sugar") + ylab("Systolic BP") +
+  theme(plot.title = element_text(hjust = 0.5))
+# Age vs SystolicBP
+ggplot(data, aes(x = Age, y = SystolicBP, color = RiskLevel)) +
+  geom_point(size = 3, alpha = 0.7) +
+  ggtitle("Scatter Plot: Age vs. Systolic BP by Risk Level") +
+  theme_minimal() +
+  xlab("Age") + ylab("Systolic BP") +
+  theme(plot.title = element_text(hjust = 0.5))
+# BS vs Age
+ggplot(data, aes(x = BS , y = Age, color = RiskLevel)) +
+  geom_point(size = 3, alpha = 0.7) +
+  ggtitle("Scatter Plot: BS  vs. Age by Risk Level") +
+  theme_minimal() +
+  xlab("BS ") + ylab("Age") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Pair plots colored by RiskLevel
+ggpairs(data[, c(numeric_columns, 'RiskLevel')], aes(color = RiskLevel))
+
+#### PCA
+PCA(data[, numeric_columns])
+resPCA <- prcomp(data[, numeric_columns])
+autoplot(resPCA, data = data, colour = 'RiskLevel')
+# resPCA1 <- PCA(data, quali.sup = 7)
+autoplot(resPCA, data = data, colour = 'RiskLevel',
+         loadings = TRUE, loadings.colour = 'blue',
+         loadings.label = TRUE, loadings.label.size = 3)
+# Normalize numerical features using Min-Max scaling
+
+preproc_values <- preProcess(data[, numeric_columns], method = c("range"))
+data[, numeric_columns] <- predict(preproc_values, data[, numeric_columns])
+
+PCA(data[, numeric_columns])
+resPCA <- prcomp(data[, numeric_columns])
+autoplot(resPCA, data = data, colour = 'RiskLevel')
+# resPCA1 <- PCA(data, quali.sup = 7)
+autoplot(resPCA, data = data, colour = 'RiskLevel',
+         loadings = TRUE, loadings.colour = 'blue',
+         loadings.label = TRUE, loadings.label.size = 3)
+# Normalize numerical features using Min-Max scaling
+
+```
+
+## 
+
+## Conclusions:
