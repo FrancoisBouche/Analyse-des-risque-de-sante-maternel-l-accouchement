@@ -1,0 +1,194 @@
+---
+title: "test du 22.10 svm"
+author: "Mireile"
+date: "2024-10-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require("e1071") ## Include svm function
+require("kernlab") ## Function ksvm
+require("caret") ## Function train and tools for assessing classification performances
+library(pROC)
+library(ggplot2)
+```
+
+
+```{r}
+data <- read.csv("Maternal Health Risk Data Set.csv")
+```
+
+```{r}
+head(data)
+str(data)
+```
+
+```{r}
+data$RiskLevel <- as.factor(data$RiskLevel)
+str(data)
+```
+```{r}
+set.seed(123)
+index <- createDataPartition(data$RiskLevel, p = 0.7, list = FALSE)
+train_data <- data[index, ]
+test_data <- data[-index, ]
+```
+
+```{r}
+str(train_data)
+```
+
+
+
+
+```{r cars}
+#################
+## RBF kernel
+#################
+
+cost.vec <- c(0.001,0.01,0.1,1,10,10,100,1000)
+gamma.vec <- seq(0.1,1,by=0.1)
+
+param.grid <- expand.grid(cost=cost.vec,gamma=gamma.vec)
+
+
+res.e1071 <- rep(NA,times=nrow(param.grid))
+res.kernlab <- rep(NA,times=nrow(param.grid))
+for (i in 1:nrow(param.grid)){
+	mod.svm <- svm(RiskLevel~.,data=train_data,kernel="radial",scale=FALSE,cost=param.grid[i,1],gamma=param.grid[i,2])
+	pred.svm.test <- predict(mod.svm,newdata=test_data)
+	cM.svm <- confusionMatrix(data = pred.svm.test, reference = test_data$RiskLevel)
+	res.e1071[i] <- cM.svm$overall["Accuracy"]
+	
+	mod.ksvm <- ksvm(RiskLevel ~.,data=train_data,kernel="rbfdot",C=param.grid[i,1],sigma=param.grid[i,2])
+	pred.ksvm.test <- predict(mod.ksvm,newdata=test_data)
+	cM.kvsm <- confusionMatrix(data = pred.ksvm.test, reference = test_data$RiskLevel)
+	res.kernlab[i] <- cM.kvsm$overall["Accuracy"]
+}
+
+
+plot(log(param.grid[,1]),res.e1071,type="b",ylim=c(0,1),col=0)
+for (i in 1:length(gamma.vec)){
+	w <- which(param.grid[,2]==gamma.vec[i])
+	lines(log(param.grid[w,1]),res.e1071[w],col=i)
+	lines(log(param.grid[w,1]), res.kernlab[w],col=i,lty=2)
+}
+
+
+fitControl.repeatedcv <- trainControl(method = "repeatedcv",number=10)
+tG = expand.grid(C=cost.vec,sigma= gamma.vec)
+tG2 = expand.grid()
+```
+
+
+```{r cars}
+## Caret with kernlab
+set.seed(123)
+mod.repeatedcv.RBF.kernlab <- train(RiskLevel ~.,data=train_data, method="svmRadial",trControl = fitControl.repeatedcv,tuneGrid = tG)
+mod.caret.RBF.kernlab <- mod.repeatedcv.RBF.kernlab
+
+pred.caret.kernlab <- predict(mod.repeatedcv.RBF.kernlab,newdata=test_data)
+cM.caret.kernlab <- confusionMatrix(data = pred.caret.kernlab, reference = test_data$RiskLevel)
+cM.caret.kernlab$overall["Accuracy"]
+
+```
+
+
+
+```{r}
+# Créer un objet ROC multi-classes
+roc.multi.kernlab <- multiclass.roc(test_data$RiskLevel, as.numeric(pred.caret.kernlab))
+
+# Extraire les courbes ROC pour chaque classe
+roc.multi.curves.kernlab <- roc.multi.kernlab$rocs
+
+# Tracer les courbes ROC
+plot(roc.multi.curves.kernlab[[1]], col="blue", main="Multi-class ROC curve (kernlab)")
+for (i in 2:length(roc.multi.curves.kernlab)) {
+    plot(roc.multi.curves.kernlab[[i]], col=i, add=TRUE)
+}
+legend("bottomright", legend=levels(test_data$RiskLevel), col=1:length(levels(test_data$RiskLevel)), lwd=2)
+
+```
+
+
+
+```{r }
+## e1071 , One vs One
+ctrl <- tune.control(
+  sampling='cross',   # Do cross-validation (the default)
+  cross=5,            # Num folds (default = 10)
+  nrepeat=5)          # Num repeats (default is 1) 
+
+train.grid <- list(cost=2^(-2:5), gamma=2^seq(-1, 1, by=.5))
+
+tuned <- tune(svm, RiskLevel~., data=train_data, kernel='radial',
+              ranges = train.grid, tunecontrol = ctrl)
+summary(tuned)
+
+```
+
+```
+
+```{r}
+# save the best one...
+best.svm <- tuned$best.model
+summary(best.svm)
+```
+
+```{r}
+pred.caret.kernlab <- predict(mod.repeatedcv.RBF.kernlab,newdata=test_data)
+cM.caret.kernlab <- confusionMatrix(data = pred.caret.kernlab, reference = test_data$RiskLevel)
+cM.caret.kernlab$overall["Accuracy"]
+```
+
+
+```{r}
+test_data$pred_one_vs_one <- predict(best.svm, newdata=test_data)
+table( Truth=test_data$RiskLevel, test_data$pred_one_vs_one )
+```
+
+```
+
+
+
+```{r}
+# Créer un objet ROC multi-classes
+roc.multi.one_vs_one <- multiclass.roc(test_data$RiskLevel, as.numeric(test_data$pred_one_vs_one))
+
+# Extraire les courbes ROC pour chaque classe
+roc.multi.curves.one_vs_one <- roc.multi.one_vs_one$rocs
+
+# Tracer les courbes ROC
+plot(roc.multi.curves.kernlab[[1]], col="blue", main="Multi-class ROC curve (kernlab)")
+for (i in 2:length(roc.multi.curves.kernlab)) {
+    plot(roc.multi.curves.kernlab[[i]], col=i, add=TRUE)
+}
+legend("bottomright", legend=levels(test_data$RiskLevel), col=1:length(levels(test_data$RiskLevel)), lwd=2)
+
+```
+
+```
+```{r}
+
+
+# Calcul de la matrice de confusion
+conf_matrix_One_vs_One <- confusionMatrix(test_data$pred_one_vs_one, test_data$RiskLevel)
+print(conf_matrix_One_vs_One)
+cm_table_One_vs_One <- as.table(conf_matrix_One_vs_One)
+
+# Conversion de la matrice de confusion en data frame pour ggplot
+cm_df_One_vs_One <- as.data.frame(cm_table_One_vs_One)
+colnames(cm_df_One_vs_One) <- c("Predicted", "Actual", "Freq")
+
+# Plot de la heatmap de la matrice de confusion
+ggplot(data = cm_df_One_vs_One, aes(x = Actual, y = Predicted, fill = Freq)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = Freq), vjust = 1) +
+  scale_fill_gradient(low = "white", high = "violet") +
+  labs(title = "Matrice de Confusion_One_vs_One_radial", x = "Classe Réelle", y = "Classe Prédite_One_vs_One_radial") +
+  theme_minimal()
+```
+```
+
+
